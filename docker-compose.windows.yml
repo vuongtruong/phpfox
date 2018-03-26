@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+
+    mysql-server:
+        image: mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: passwd
+        container_name: mysql-server
+        restart: always
+        volumes:
+          - ./mysql-data:/var/lib/mysql
+          - ./conf/mysql.cnf:/etc/mysql/conf.d/mysql_local.cnf
+          - ./mysql-dump-files:/tmp/dump-files
+        ports:
+          - 3006:3306
+        networks:
+          - docker_network
+        command: >
+          bash -c "
+          cp /etc/mysql/conf.d/mysql_local.cnf /etc/mysql/conf.d/mysql.cnf
+          && chmod 644 /etc/mysql/conf.d/mysql.cnf
+          && /entrypoint.sh mysqld
+          "
+    adminer:
+        image: adminer
+        container_name: mysql-adminer
+        restart: always
+        external_links:
+          - mysql-server:db
+        ports:
+          - 9876:8080
+        networks:
+          - docker_network
+networks:
+  docker_network:
